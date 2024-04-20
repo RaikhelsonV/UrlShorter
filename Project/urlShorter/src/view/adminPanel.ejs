@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Document</title>
+    <style>
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            width: 70%;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .sub_table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .main_table {
+            border: 1px solid #ccc;
+            border-collapse: collapse;
+            border-radius: 5px;
+            width: 70%;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ccc;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        form:not(.del-form, .logout) {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 30%;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
+            background-color: #f9f9f9;
+        }
+
+        input[type='text'],
+        input[type='email'],
+        input[type='password'],
+        select,
+        option,
+        button:not(.logout-button) {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        ul,
+        button:not(.logout-button) {
+            background-color: #ccc;
+            color: black;
+            border: none;
+            cursor: pointer;
+        }
+
+        ul:hover,
+        button:hover {
+            background-color: rgb(94, 96, 94);
+        }
+
+        ul {
+            width: 70px;
+            list-style-type: none;
+            padding: 10px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+
+        }
+
+        .menu-item,
+        .logout-button {
+            text-decoration: none;
+            background-color: #ccc;
+            color: black;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 4px;
+            box-sizing: border-box;
+            width: 100px;
+            text-align: center;
+        }
+
+        .menu-item:hover,
+        .logout-button:hover {
+            background-color: rgb(94, 96, 94);
+        }
+
+        label {
+            margin-top: 10px;
+            display: block;
+        }
+
+        ul {
+            text-align: center;
+            padding: 0;
+        }
+
+        li {
+            list-style: none;
+        }
+
+
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <a class="menu-item" href="/url">URL</a>
+    <form class="logout" action="/admin/logout" method="POST">
+        <button class="logout-button" type="submit">Logout</button>
+    </form>
+</div>
+
+<h2>HELLO ADMIN</h2>
+
+<form action="/admin" method="POST">
+    <input
+            type="text"
+            name="name"
+            placeholder="Enter your username"
+            required
+            minlength="10"
+            maxlength="50"
+    />
+    <input
+            type="text"
+            name="surname"
+            placeholder="Enter your surname"
+            required
+            minlength="10"
+            maxlength="50"
+    />
+    <input
+            type="email"
+            name="email"
+            placeholder="Enter your email"
+            required
+    />
+    <input
+            type="password"
+            name="password"
+            placeholder="Enter your password"
+            required
+    />
+    <label for="role">Select role:</label>
+    <select id="role" name="role" required>
+        <option value="user">User</option>
+        <option value="admin">Admin</option>
+    </select>
+
+    <button type="submit">Create User</button>
+</form>
+
+<% if (typeof error !== 'undefined') { %>
+    <div style="color: red;margin-top: 20px; margin-bottom: 10px;"><%= error %></div>
+<% } %>
+
+<div style="margin-top: 20px"></div>
+
+<!-- Main table for displaying users and their links -->
+<table class="main_table">
+    <thead>
+    <tr>
+        <th colspan="8" style="background-color: #ccc; text-align: center; font-weight: bold;">User Data</th>
+    </tr>
+    <tr>
+        <th>ID</th>
+        <th>NAME</th>
+        <th>SURNAME</th>
+        <th>EMAIL</th>
+        <th>ROLE</th>
+        <th>CREATED_TIME</th>
+        <th>ACTION</th>
+        <th>RATE LIMIT</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% for (let user of users) { %>
+        <tr>
+            <td><%= user.user_id %></td>
+            <td><%= user.name %></td>
+            <td><%= user.surname %></td>
+            <td><%= user.email %></td>
+            <td><%= user.role %></td>
+            <td><%= new Date(user.created_at).toLocaleString() %></td>
+            <td>
+                <form class="del-form" action="/admin/delete" method="POST">
+                    <input type="hidden" name="user_id" value="<%= user.user_id %>">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+            <td>
+                <form class="del-form" action="/admin/deleteRateLimits" method="POST">
+                    <input type="hidden" name="user_id" value="<%= user.user_id %>">
+                    <button type="submit">Delete All Rate Limits</button>
+                </form>
+            </td>
+        </tr>
+        <!-- Sub-table for displaying user URLs -->
+        <tr>
+            <td colspan="8">
+                <table class="sub_table">
+                    <thead>
+                    <tr>
+                        <th colspan="2" style="background-color: #f2f2f2; text-align: center; font-weight: bold;">URL
+                            Data
+                        </th>
+                        <th colspan="3" style="background-color: #f2f2f2; text-align: center; font-weight: bold;">Rate
+                            Limits
+                        </th>
+                    </tr>
+                    <tr>
+                        <th>URL</th>
+                        <th>Visits</th>
+                        <th>User</th>
+                        <th>Code</th>
+                        <th>IP</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <% if (user.urls && user.urls.length > 0) { %>
+                        <% for (let url of user.urls) { %>
+                            <tr>
+                                <!-- Данные URL-адреса -->
+                                <td><a href="<%= url.url %>"><%= url.name %></a></td>
+                                <td><%= url.visits %></td>
+                                <td>
+                                    <form class="del-form" action="/admin/deleteRateLimitsByUser" method="POST">
+                                        <input type="hidden" name="user_id" value="<%= user.user_id %>">
+                                        <button type="submit">Delete</button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <form class="del-form" action="/admin/deleteRateLimitsByCode" method="POST">
+                                        <input type="hidden" name="user_id" value="<%= user.user_id %>">
+                                        <button type="submit">Delete</button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <form class="del-form" action="/admin/deleteRateLimitsByIp" method="POST">
+                                        <input type="hidden" name="user_id" value="<%= user.user_id %>">
+                                        <button type="submit">Delete</button>
+                                    </form>
+                                </td>
+
+                            </tr>
+                        <% } %>
+                    <% } %>
+
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    <% } %>
+    </tbody>
+</table>
+
+
+</body>
+</html>

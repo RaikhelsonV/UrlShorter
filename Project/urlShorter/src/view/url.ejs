@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Document</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        table {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 90%;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            text-align: left;
+
+        }
+
+        table .code, .enabled {
+            width: 10%;
+            word-break: break-all;
+        }
+
+        th {
+            background-color: #ccc;
+        }
+
+        form:not(.logout, .del-form, .upd-form) {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 30%;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
+            background-color: #f9f9f9;
+        }
+
+        input[type='text'],
+        input[type='password'],
+        input[type="date"],
+        input[type='url'],
+        select,
+        button:not(.logout-button,.upd-btn) {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            max-width: 100%; /* Добавлено */
+        }
+
+        button:not(.logout-button) {
+            background-color: #ccc;
+            color: black;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: rgb(94, 96, 94);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            width: 70%;
+            margin-bottom: 20px;
+        }
+
+        .menu-item,
+        .logout-button {
+            text-decoration: none;
+            background-color: #ccc;
+            color: black;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 4px;
+            box-sizing: border-box;
+            width: 120px; /* Изменено */
+            text-align: center;
+        }
+
+        .menu-item:hover,
+        .logout-button:hover {
+            background-color: rgb(94, 96, 94);
+        }
+
+        .upd-btn {
+            padding: 8px; /* Уменьшаем внутренние отступы */
+            background-color: #ccc;
+            color: black;
+            border: none;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <a class="menu-item" href="/wsDashboard.html">DASHBOARD WS</a>
+    <a class="menu-item" href="/dashboard">DASH</a>
+
+    <form class="logout" action="/user/logout" method="POST">
+        <button class="logout-button" type="submit">Logout</button>
+    </form>
+</div>
+
+
+<h2>URL!</h2>
+
+<form id="urlForm" action="/url/addUrl" method="POST" onsubmit="return validateForm()">
+    <input
+            type="text"
+            name="name"
+            placeholder="Enter the name"
+            required
+            minlength="1"
+            maxlength="50"
+    />
+    <input
+            type="url"
+            name="url"
+            placeholder="Enter the URL"
+            required
+    />
+    <input
+            type="text"
+            name="code"
+            placeholder="Enter custom code (optional)"
+            minlength="10"
+            maxlength="50"
+    />
+    <div id="codeError" class="error" style="display: none;">The code must be at least 10 characters long.</div>
+    <select name="type">
+        <option value="permanent">Permanent</option>
+        <option value="temporary">Temporary</option>
+        <option value="one_time">One-Time</option>
+    </select>
+
+    <div id="expireDateField" style="display: none;">
+        <input type="date" name="expire_at">
+    </div>
+
+    <button type="submit">Create URL</button>
+</form>
+
+<div style="margin-top: 20px"></div>
+
+<% if (typeof error !== 'undefined' || deleteSuccess || addSuccess)  { %>
+    <div style="margin-top: 20px; margin-bottom: 10px; text-align: center; color: <%= error ? 'red' : 'green' %>;">
+        <%= error ? error : (deleteSuccess ? 'URL was successfully deleted!' : (addSuccess ? 'URL successfully added' : '')) %>
+    </div>
+<% } %>
+<table>
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>URL</th>
+        <th>Visits</th>
+        <th class="code">Code</th>
+        <th>Type</th>
+        <th>Expire_At</th>
+        <th class="enabled">Enabled</th>
+        <th>ACTION</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% userUrls.forEach(url => { %>
+        <tr>
+            <td><%= url.name %></td>
+            <td><%= url.url %></td>
+            <td><%= url.visits %></td>
+            <td class="code"><a href="/code/<%= url.code %>"><%= url.code %></a></td>
+            <td>
+                <form class="upd-form" action="/url/updateType" method="POST">
+                    <input type="hidden" name="code" value="<%= url.code %>">
+                    <select class="upd-sel" name="type" onchange="this.form.submit()">
+                        <option class="upd-opt" value="one_time" <%= url.type === 'one_time' ? 'selected' : '' %>>
+                            One-Time
+                        </option>
+                        <option class="upd-opt" value="temporary" <%= url.type === 'temporary' ? 'selected' : '' %>>
+                            Temporary
+                        </option>
+                        <option class="upd-opt" value="permanent" <%= url.type === 'permanent' ? 'selected' : '' %>>
+                            Permanent
+                        </option>
+                    </select>
+
+                </form>
+
+            </td>
+
+            <td>
+                <% if (url.expire_at !== null || url.type === 'temporary') { %>
+                    <form class="upd-form" action="/url/updateDate" method="POST">
+                        <input type="hidden" name="code" value="<%= url.code %>">
+                        <input id="expireDateInput" type="date" name="expire_at"
+                               value="<%= new Date(url.expire_at).toISOString().substr(0, 10) %>"
+                               onchange="this.form.submit()">
+                    </form>
+                <% } else { %>
+                    <input type="hidden" name="expire_at">
+                <% } %>
+            </td>
+
+            <td class="enabled">
+                <form class="upd-form" action="/url/updateEnabledStatus" method="POST">
+                    <input type="hidden" name="code" value="<%= url.code %>">
+                    <select class="upd-sel" name="enabled" onchange="this.form.submit()">
+                        <option class="upd-opt" value="true" <%= url.enabled ? 'selected' : '' %>>True</option>
+                        <option class="upd-opt" value="false" <%= !url.enabled ? 'selected' : '' %>>False</option>
+                    </select>
+                </form>
+            </td>
+            <td>
+                <form class="del-form" action="/url/delete" method="POST">
+                    <input type="hidden" name="user_id" value="<%= url.user_id %>">
+                    <input type="hidden" name="code" value="<%= url.code %>">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+    <% }); %>
+    </tbody>
+</table>
+<script>
+    // Сначала проверяем состояние селекта при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function () {
+        const selectType = document.querySelector('select[name="type"]');
+        const expireDateField = document.getElementById('expireDateField');
+
+        if (selectType.value === 'temporary') {
+            expireDateField.style.display = 'block';
+            expireDateField.required = true;
+        } else {
+            expireDateField.style.display = 'none';
+
+        }
+
+        // Далее добавляем обработчик события на изменение селекта
+        selectType.addEventListener('change', function () {
+            if (this.value === 'temporary') {
+                expireDateField.style.display = 'block';
+                expireDateField.required = true;
+            } else {
+                expireDateField.style.display = 'none';
+            }
+        });
+
+
+    });
+
+    function validateForm() {
+
+        const selectType = document.querySelector('select[name="type"]');
+        const expireDateField = document.getElementById('expireDateField').querySelector('input[type="date"]');
+
+        if (selectType.value === 'temporary' && !expireDateField.value) {
+            alert('Please select expiration date for temporary URL');
+            return false;
+        }
+
+
+        return true;
+    }
+
+
+
+</script>
+
+</body>
+</html>

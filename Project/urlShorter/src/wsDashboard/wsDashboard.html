@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            width: 200px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .url-item,
+        .visit-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 10px;
+        }
+
+        .url-name,
+        .visit-name {
+            font-weight: bold;
+        }
+
+        .url-visits,
+        .visit-count {
+            color: blue;
+        }
+
+        .flex-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin: 0 auto;
+            max-width: 800px;
+        }
+
+        .flex-container > .container {
+            flex-basis: 38%;
+            margin-bottom: 20px;
+        }
+
+    </style>
+</head>
+<body>
+<h1>DASHBOARD</h1>
+
+<div class="flex-container">
+    <div class="container">
+        <h2>Top 5 System URLS</h2>
+        <div id="topFiveSystemLinks"></div>
+    </div>
+
+    <div class="container">
+        <h2>Top 5 URLS</h2>
+        <div id="topFiveLinks"></div>
+    </div>
+
+    <div class="container">
+        <h2>Total URLS</h2>
+        <div id="totalLinksCount"></div>
+    </div>
+
+    <div class="container">
+        <h2>Last visit:</h2>
+        <div id="visitsContainer"></div>
+    </div>
+    <div class="container">
+        <h2>Rate Limits by code:</h2>
+        <div id="rateLimitsByCode"></div>
+    </div>
+
+
+</div>
+
+
+<script>
+    const ws = new WebSocket('ws://localhost:3006');
+
+    ws.onopen = () => {
+        console.log('WebSocket connection established');
+        ws.send('Hello from client');
+    };
+
+    ws.onmessage = function (event) {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'countUpdate') {
+            document.getElementById('totalLinksCount').innerText = `Number of created links: ${data.data}`;
+        } else if (data.type === 'visitsUpdate') {
+            const visitsContainer = document.getElementById('visitsContainer');
+            visitsContainer.innerHTML = '';
+
+            data.data.forEach(one => {
+                const visitItem = document.createElement('div');
+                visitItem.classList.add('visit-item');
+
+                const nameElement = document.createElement('span');
+                nameElement.classList.add('visit-name');
+                nameElement.innerText = one.name;
+
+                const visitsElement = document.createElement('span');
+                visitsElement.classList.add('visit-count');
+                visitsElement.innerText = one.visits;
+
+                visitItem.appendChild(nameElement);
+                visitItem.appendChild(visitsElement);
+
+                visitsContainer.appendChild(visitItem);
+            });
+
+        } else if (data.type === 'topUpdate') {
+            const topLinksContainer = document.getElementById('topFiveLinks');
+            topLinksContainer.innerHTML = '';
+
+            data.data.forEach(url => {
+                const linkElement = document.createElement('div');
+                linkElement.classList.add('url-item');
+
+                const nameElement = document.createElement('span');
+                nameElement.classList.add('url-name');
+                nameElement.innerText = url.name;
+
+                const visitsElement = document.createElement('span');
+                visitsElement.classList.add('url-visits');
+                visitsElement.innerText = url.visits;
+
+                linkElement.appendChild(nameElement);
+                linkElement.appendChild(visitsElement);
+
+                topLinksContainer.appendChild(linkElement);
+            });
+        } else if (data.type === 'topSystemUpdate') {
+            const topLinksContainer = document.getElementById('topFiveSystemLinks');
+            topLinksContainer.innerHTML = '';
+
+            data.data.forEach(url => {
+                const linkElement = document.createElement('div');
+                linkElement.classList.add('url-item');
+
+                const nameElement = document.createElement('span');
+                nameElement.classList.add('url-name');
+                nameElement.innerText = url.name;
+
+                const visitsElement = document.createElement('span');
+                visitsElement.classList.add('url-visits');
+                visitsElement.innerText = url.visits;
+
+                linkElement.appendChild(nameElement);
+                linkElement.appendChild(visitsElement);
+
+                topLinksContainer.appendChild(linkElement);
+            });
+        } else if (data.type === 'rateLimits') {
+            const rateLimitsContainer = document.getElementById('rateLimitsByCode');
+            rateLimitsContainer.innerHTML = '';
+
+            data.data.forEach(rateLimits => {
+                const rlElement = document.createElement('div');
+                rlElement.classList.add('url-item');
+
+                const codeKeyElement = document.createElement('span');
+                codeKeyElement.classList.add('url-name');
+                codeKeyElement.innerText = rateLimits.code;
+
+                const codeValueElement = document.createElement('span');
+                codeValueElement.classList.add('url-visits');
+                codeValueElement.innerText = rateLimits.percentage + '%';
+
+                rlElement.appendChild(codeKeyElement);
+                rlElement.appendChild(codeValueElement);
+
+                rateLimitsContainer.appendChild(rlElement);
+            });
+        }
+    }
+</script>
+</body>
+</html>

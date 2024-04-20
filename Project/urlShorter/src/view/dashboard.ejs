@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Document</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        table {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 90%;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            text-align: left;
+
+        }
+
+        table .code, .enabled {
+            width: 10%;
+            word-break: break-all;
+        }
+
+        th {
+            background-color: #ccc;
+        }
+
+        form:not(.logout, .del-form, .upd-form) {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 30%;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
+            background-color: #f9f9f9;
+        }
+
+        input[type='text'],
+        input[type='password'],
+        input[type="date"],
+        input[type='url'],
+        select,
+        button:not(.logout-button,.upd-btn) {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            max-width: 100%;
+        }
+
+        button:not(.logout-button) {
+            background-color: #ccc;
+            color: black;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: rgb(94, 96, 94);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            width: 70%;
+            margin-bottom: 20px;
+        }
+
+        .menu-item,
+        .logout-button {
+            text-decoration: none;
+            background-color: #ccc;
+            color: black;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 4px;
+            box-sizing: border-box;
+            width: 120px; /* Изменено */
+            text-align: center;
+        }
+
+        .menu-item:hover,
+        .logout-button:hover {
+            background-color: rgb(94, 96, 94);
+        }
+
+        .upd-btn {
+            padding: 8px;
+            background-color: #ccc;
+            color: black;
+            border: none;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <a class="menu-item" href="/wsDashboard.html">DASHBOARD WS</a>
+    <a class="menu-item" href="/url">URL</a>
+
+    <form class="logout" action="/user/logout" method="POST">
+        <button class="logout-button" type="submit">Logout</button>
+    </form>
+</div>
+<div style="margin-top: 20px"></div>
+
+
+<div style="margin-top: 20px; display: flex; justify-content: space-between; width: 90%">
+    <div style="width: 48%;">
+        <h3>Top 5 System URLs</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Visits</th>
+            </tr>
+            </thead>
+            <tbody>
+            <% top5Urls.forEach(url => { %>
+                <tr>
+                    <td><%= url.name %></td>
+                    <td><%= url.visits %></td>
+                </tr>
+            <% }); %>
+            </tbody>
+        </table>
+    </div>
+    <div style="width: 48%;">
+        <h3>Top 5 URLs by User</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Visits</th>
+            </tr>
+            </thead>
+            <tbody>
+            <% top5UrlsByUser.forEach(url => { %>
+                <tr>
+                    <td><%= url.name %></td>
+                    <td><%= url.visits %></td>
+                </tr>
+            <% }); %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<div style="margin-top: 20px ; width: 48%;">
+    <h3>All URLs by User</h3>
+    <table>
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Visits</th>
+        </tr>
+        </thead>
+        <tbody>
+        <% allUrlsByUser.forEach(url => { %>
+            <tr>
+                <td><%= url.name %></td>
+                <td><%= url.visits %></td>
+            </tr>
+        <% }); %>
+        </tbody>
+    </table>
+</div>
+</div>
+</div>
+
+<div style="margin-top: 20px ; width: 48%;">
+    <h3>Limits List</h3>
+    <table>
+        <thead>
+        <tr>
+            <th>Code</th>
+            <th>Limit</th>
+        </tr>
+        </thead>
+        <tbody>
+        <% limitsList.forEach(limit => { %>
+            <tr>
+                <td><%= limit.code %></td>
+                <td><%= limit.percentage + '%' %></td>
+            </tr>
+        <% }); %>
+        </tbody>
+    </table>
+</div>
+
+
+</body>
+</html>
